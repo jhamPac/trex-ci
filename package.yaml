@@ -19,8 +19,34 @@ extra-source-files:
 # common to point users to the README.md file.
 description: https://github.com/jhamPac/trex-ci#readme
 
+default-extensions:
+    - BlockArguments
+    - DeriveAnyClass
+    - DeriveGeneric
+    - LambdaCase
+    - NoImplicitPrelude
+    - OverloadedStrings
+    - StrictData
+
 dependencies:
     - base >= 4.7 && < 5
+    - aeson
+    - async
+    - butcher
+    - hslogger
+    - http-client - http-conduit - http-types
+    - network
+    - record-hasfield - rio
+    - scotty
+    - serialise
+    - stm
+    - time
+    - typed-process
+    - wai-cors
+    - yaml
+
+ghc-options:
+    - -F -pgmF=record-dot-preprocessor
 
 library:
     source-dirs: src
@@ -46,3 +72,5 @@ tests:
             - -with-rtsopts=-N
         dependencies:
             - trex-ci
+            - hspec
+            - QuickCheck
