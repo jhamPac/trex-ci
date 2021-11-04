@@ -24,6 +24,8 @@ source-repository head
   location: https://github.com/jhamPac/trex-ci
 
 library
+  exposed-modules:
+      Core
   other-modules:
       Paths_trex_ci
   hs-source-dirs:
