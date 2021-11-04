@@ -2,12 +2,12 @@ module Core where
 
 import           RIO
 
-data Pipeline = Pipeline { steps :: [Step] }
+data Pipeline = Pipeline { steps :: NonEmpty Step }
     deriving (Eq, Show)
 
 data Step = Step {
     name     :: StepName,
-    commands :: [Text],
+    commands :: NonEmpty Text,
     image    :: Image
 } deriving (Eq, Show)
 
