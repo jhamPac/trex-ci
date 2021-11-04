@@ -1,15 +1,16 @@
 import           Core
 import           RIO
+import           RIO.NonEmpty.Partial as NE
 
 makeStep :: Text -> Text -> [Text] -> Step
 makeStep name image commands = Step {
     name = StepName name,
     image = Image image,
-    commands = NonEmpty.Partial.fromList commands
+    commands = NE.fromList commands
 }
 
 makePipeline :: [Step] -> Pipeline
-makePipeline steps = Pipeline { steps = NonEmpty.Partial.fromList steps }
+makePipeline steps = Pipeline { steps = NE.fromList steps }
 
 testPipeline :: Pipeline
 testPipeline = makePipeline
