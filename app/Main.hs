@@ -3,4 +3,4 @@ module Main where
 import           RIO
 
 main :: IO ()
-main = print "Coming soon"
+main = runSimpleApp $ do logInfo "Coming Soon"
