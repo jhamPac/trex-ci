@@ -1,1 +1,3 @@
-# trex-ci
+# T-rex 🦖 CI
+
+The powerful CI server!
