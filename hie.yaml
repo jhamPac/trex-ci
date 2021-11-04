@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "trex-ci:lib"
+
+    - path: "./app/Main.hs"
+      component: "trex-ci:exe:trex-ci-exe"
+
+    - path: "./app/Paths_trex_ci.hs"
+      component: "trex-ci:exe:trex-ci-exe"
+
+    - path: "./test"
+      component: "trex-ci:test:trex-ci-test"

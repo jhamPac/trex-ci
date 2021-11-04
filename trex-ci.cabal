@@ -6,12 +6,12 @@ cabal-version: 1.12
 
 name:           trex-ci
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/trex-ci#readme>
-homepage:       https://github.com/githubuser/trex-ci#readme
-bug-reports:    https://github.com/githubuser/trex-ci/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2021 Author name here
+description:    https://github.com/jhamPac/trex-ci#readme
+homepage:       https://github.com/jhamPac/trex-ci#readme
+bug-reports:    https://github.com/jhamPac/trex-ci/issues
+author:         jhampac
+maintainer:     cloud@kevia.me
+copyright:      2021 jhampac
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -21,17 +21,41 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/trex-ci
+  location: https://github.com/jhamPac/trex-ci
 
 library
-  exposed-modules:
-      Lib
   other-modules:
       Paths_trex_ci
   hs-source-dirs:
       src
+  default-extensions:
+      BlockArguments
+      DeriveAnyClass
+      DeriveGeneric
+      LambdaCase
+      NoImplicitPrelude
+      OverloadedStrings
+      StrictData
+  ghc-options: -F -pgmF=record-dot-preprocessor
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , async
+    , base >=4.7 && <5
+    , butcher
+    , hslogger
+    , http-client
+    , http-conduit
+    , http-types
+    , network
+    , record-hasfield
+    , rio
+    , scotty
+    , serialise
+    , stm
+    , time
+    , typed-process
+    , wai-cors
+    , yaml
   default-language: Haskell2010
 
 executable trex-ci-exe
@@ -40,10 +64,35 @@ executable trex-ci-exe
       Paths_trex_ci
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  default-extensions:
+      BlockArguments
+      DeriveAnyClass
+      DeriveGeneric
+      LambdaCase
+      NoImplicitPrelude
+      OverloadedStrings
+      StrictData
+  ghc-options: -F -pgmF=record-dot-preprocessor -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , async
+    , base >=4.7 && <5
+    , butcher
+    , hslogger
+    , http-client
+    , http-conduit
+    , http-types
+    , network
+    , record-hasfield
+    , rio
+    , scotty
+    , serialise
+    , stm
+    , time
     , trex-ci
+    , typed-process
+    , wai-cors
+    , yaml
   default-language: Haskell2010
 
 test-suite trex-ci-test
@@ -53,8 +102,35 @@ test-suite trex-ci-test
       Paths_trex_ci
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  default-extensions:
+      BlockArguments
+      DeriveAnyClass
+      DeriveGeneric
+      LambdaCase
+      NoImplicitPrelude
+      OverloadedStrings
+      StrictData
+  ghc-options: -F -pgmF=record-dot-preprocessor -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      QuickCheck
+    , aeson
+    , async
+    , base >=4.7 && <5
+    , butcher
+    , hslogger
+    , hspec
+    , http-client
+    , http-conduit
+    , http-types
+    , network
+    , record-hasfield
+    , rio
+    , scotty
+    , serialise
+    , stm
+    , time
     , trex-ci
+    , typed-process
+    , wai-cors
+    , yaml
   default-language: Haskell2010

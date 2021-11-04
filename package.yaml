@@ -34,9 +34,12 @@ dependencies:
     - async
     - butcher
     - hslogger
-    - http-client - http-conduit - http-types
+    - http-client
+    - http-conduit
+    - http-types
     - network
-    - record-hasfield - rio
+    - record-hasfield
+    - rio
     - scotty
     - serialise
     - stm
