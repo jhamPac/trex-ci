@@ -8,7 +8,7 @@ makeStep name image commands = Step {
     name = StepName name,
     image = Docker.Image image,
     commands = NE.fromList commands
-}
+    }
 
 makePipeline :: [Step] -> Pipeline
 makePipeline steps = Pipeline { steps = NE.fromList steps }
@@ -21,7 +21,11 @@ testPipeline = makePipeline
     ]
 
 testBuild :: Build
-testBuild = Build { pipeline = testPipeline, state = BuildReady, completedSteps = mempty}
+testBuild = Build {
+    pipeline = testPipeline,
+    state = BuildReady,
+    completedSteps = mempty
+    }
 
 main :: IO ()
 main = pure ()
