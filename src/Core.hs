@@ -23,9 +23,6 @@ data StepResult = StepFailed ContainerExitCode | StepSucceeded
 newtype ContainerExitCode = ContainerExitCode Int
     deriving (Eq, Show)
 
-exitCodeToInt :: ContainerExitCode -> Int
-exitCodeToInt (ContainerExitCode code) = code
-
 data BuildState = BuildReady | BuildRunning | BuildFinished BuildResult
     deriving (Eq, Show)
 
@@ -33,7 +30,7 @@ data BuildResult = BuildSucceeded | BuildFailed
     deriving (Eq, Show)
 
 newtype StepName = StepName Text
-    deriving (Eq, Show)
+    deriving (Eq, Show, Ord)
 
 newtype Image = Image Text
     deriving (Eq, Show)
@@ -43,6 +40,14 @@ stepNameToText (StepName t) = t
 
 imageToText :: Image -> Text
 imageToText (Image t) = t
+
+exitCodeToInt :: ContainerExitCode -> Int
+exitCodeToInt (ContainerExitCode code) = code
+
+exitCodeToStepResult :: ContainerExitCode -> StepResult
+exitCodeToStepResult exit
+    | exitCodeToInt exit == 0 = StepSucceeded
+    | otherwise = StepFailed exit
 
 progress :: Build -> IO Build
 progress build =
