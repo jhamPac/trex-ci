@@ -1,57 +1,59 @@
 module Core where
 
+import qualified Docker
 import           RIO
 import           RIO.List as List
 import           RIO.Map  as Map
 
-data Pipeline = Pipeline { steps :: NonEmpty Step }
+data Pipeline = Pipeline {
+    steps :: NonEmpty Step
+    }
     deriving (Eq, Show)
 
 data Step = Step {
     name     :: StepName,
     commands :: NonEmpty Text,
-    image    :: Image
-} deriving (Eq, Show)
+    image    :: Docker.Image
+    }
+    deriving (Eq, Show)
 
 data Build = Build {
     pipeline       :: Pipeline,
     state          :: BuildState,
     completedSteps :: Map StepName StepResult
-} deriving (Eq, Show)
-
-data StepResult = StepFailed ContainerExitCode | StepSucceeded
+    }
     deriving (Eq, Show)
 
-newtype ContainerExitCode = ContainerExitCode Int
+data StepResult
+    = StepFailed Docker.ContainerExitCode
+    | StepSucceeded
     deriving (Eq, Show)
 
-data BuildState = BuildReady | BuildRunning BuildRunningState | BuildFinished BuildResult
+data BuildState
+    = BuildReady
+    | BuildRunning BuildRunningState
+    | BuildFinished BuildResult
     deriving (Eq, Show)
 
-data BuildRunningState = BuildRunningState { step :: StepName }
+data BuildRunningState = BuildRunningState {
+    step :: StepName
+    }
     deriving (Eq, Show)
 
-data BuildResult = BuildSucceeded | BuildFailed
+data BuildResult
+    = BuildSucceeded
+    | BuildFailed
     deriving (Eq, Show)
 
 newtype StepName = StepName Text
     deriving (Eq, Show, Ord)
 
-newtype Image = Image Text
-    deriving (Eq, Show)
-
 stepNameToText :: StepName -> Text
 stepNameToText (StepName t) = t
 
-imageToText :: Image -> Text
-imageToText (Image t) = t
-
-exitCodeToInt :: ContainerExitCode -> Int
-exitCodeToInt (ContainerExitCode code) = code
-
-exitCodeToStepResult :: ContainerExitCode -> StepResult
+exitCodeToStepResult :: Docker.ContainerExitCode -> StepResult
 exitCodeToStepResult exit
-    | exitCodeToInt exit == 0 = StepSucceeded
+    | Docker.exitCodeToInt exit == 0 = StepSucceeded
     | otherwise = StepFailed exit
 
 buildHasNextStep :: Build -> Either BuildResult Step
@@ -77,7 +79,7 @@ progress build =
                     pure $ build { state = BuildRunning s }
 
         BuildRunning state   -> do
-            let exit = ContainerExitCode 0
+            let exit = Docker.ContainerExitCode 0
                 result = exitCodeToStepResult exit
             pure build { state = BuildReady, completedSteps = Map.insert state.step result build.completedSteps}
 
