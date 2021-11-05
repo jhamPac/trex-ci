@@ -1,6 +1,7 @@
 module Core where
 
 import           RIO
+import           RIO.Map as Map
 
 data Pipeline = Pipeline { steps :: NonEmpty Step }
     deriving (Eq, Show)
@@ -63,7 +64,12 @@ progress build =
                 Left result -> pure $ build {state = BuildFinished result}
                 Right step  -> do
                     let s = BuildRunningState {step = step.name }
-                    pure $ build { state = BuildingRunning s }
-        BuildRunning    -> undefined
+                    pure $ build { state = BuildRunning s }
+
+        BuildRunning state   -> do
+            let exit = ContainerExitCode 0
+                result = exitCodeToStepResult exit
+            pure build { state = BuildReady, completedSteps = Map.insert state.step result build.completedSteps}
+
         BuildFinished _ -> pure build
 
