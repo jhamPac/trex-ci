@@ -1,7 +1,8 @@
 module Core where
 
 import           RIO
-import           RIO.Map as Map
+import           RIO.List as List
+import           RIO.Map  as Map
 
 data Pipeline = Pipeline { steps :: NonEmpty Step }
     deriving (Eq, Show)
@@ -54,7 +55,16 @@ exitCodeToStepResult exit
     | otherwise = StepFailed exit
 
 buildHasNextStep :: Build -> Either BuildResult Step
-buildHasNextStep build = undefined
+buildHasNextStep build =
+    if allSucceeded
+        then case nextStep of
+            Just step -> Right step
+            Nothing   -> Left BuildSucceeded
+        else Left BuildFailed
+    where
+        allSucceeded = List.all ((==) StepSucceeded) build.completedSteps
+        nextStep = List.find f build.pipeline.steps
+        f step = not $ Map.member step.name build.completedSteps
 
 progress :: Build -> IO Build
 progress build =
