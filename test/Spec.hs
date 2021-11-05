@@ -1,11 +1,12 @@
 import           Core
+import qualified Docker
 import           RIO
 import           RIO.NonEmpty.Partial as NE
 
 makeStep :: Text -> Text -> [Text] -> Step
 makeStep name image commands = Step {
     name = StepName name,
-    image = Image image,
+    image = Docker.Image image,
     commands = NE.fromList commands
 }
 
