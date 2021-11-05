@@ -20,7 +20,7 @@ testPipeline = makePipeline
     ]
 
 testBuild :: Build
-testBuild = Build { pipeline = testPipeline, state = BuildReady}
+testBuild = Build { pipeline = testPipeline, state = BuildReady, completedSteps = mempty}
 
 main :: IO ()
 main = pure ()

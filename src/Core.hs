@@ -23,7 +23,10 @@ data StepResult = StepFailed ContainerExitCode | StepSucceeded
 newtype ContainerExitCode = ContainerExitCode Int
     deriving (Eq, Show)
 
-data BuildState = BuildReady | BuildRunning | BuildFinished BuildResult
+data BuildState = BuildReady | BuildRunning BuildRunningState | BuildFinished BuildResult
+    deriving (Eq, Show)
+
+data BuildRunningState = BuildRunningState { step :: StepName }
     deriving (Eq, Show)
 
 data BuildResult = BuildSucceeded | BuildFailed
@@ -49,10 +52,18 @@ exitCodeToStepResult exit
     | exitCodeToInt exit == 0 = StepSucceeded
     | otherwise = StepFailed exit
 
+buildHasNextStep :: Build -> Either BuildResult Step
+buildHasNextStep build = undefined
+
 progress :: Build -> IO Build
 progress build =
     case build.state of
-        BuildReady      -> undefined
+        BuildReady      ->
+            case buildHasNextStep build of
+                Left result -> pure $ build {state = BuildFinished result}
+                Right step  -> do
+                    let s = BuildRunningState {step = step.name }
+                    pure $ build { state = BuildingRunning s }
         BuildRunning    -> undefined
         BuildFinished _ -> pure build
 
