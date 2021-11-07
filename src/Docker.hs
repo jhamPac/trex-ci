@@ -18,7 +18,11 @@ newtype ContainerExitCode = ContainerExitCode Int
 createContainer :: CreateContainerOptions -> IO ()
 createContainer options = do
     manager <- Socket.newManager "/var/run/docker.sock"
-    let body = Aeson.Null
+    let image = imageToText options.image
+    let body = Aeson.object
+                    [
+                        ("Image", Aeson.toJSON image)
+                    ]
     let req = HTTP.defaultRequest
             & HTTP.setRequestManager manager
             & HTTP.setRequestPath "/containers/create"
