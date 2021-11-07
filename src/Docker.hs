@@ -21,7 +21,11 @@ createContainer options = do
     let image = imageToText options.image
     let body = Aeson.object
                     [
-                        ("Image", Aeson.toJSON image)
+                        ("Image", Aeson.toJSON image),
+                        ("Tty", Aeson.toJSON True),
+                        ("Labels", Aeson.object [("t-rex", "")]),
+                        ("Cmd", "echo T-Rex is here, ROARRR"),
+                        ("Entrypoint", Aeson.toJSON [Aeson.String "/bin/sh", "-c"])
                     ]
     let req = HTTP.defaultRequest
             & HTTP.setRequestManager manager
