@@ -1,7 +1,9 @@
 module Docker where
 
+import qualified Data.Aeson          as Aeson
 import qualified Network.HTTP.Simple as HTTP
 import           RIO
+import qualified Socket
 
 data CreateContainerOptions = CreateContainerOptions {
     image :: Image
@@ -15,8 +17,10 @@ newtype ContainerExitCode = ContainerExitCode Int
 
 createContainer :: CreateContainerOptions -> IO ()
 createContainer options = do
-    let body = ()
+    manager <- Socket.newManager "/var/run/docker.sock"
+    let body = Aeson.Null
     let req = HTTP.defaultRequest
+            & HTTP.setRequestManager manager
             & HTTP.setRequestPath "/containers/create"
             & HTTP.setRequestMethod "POST"
             & HTTP.setRequestBodyJSON body
