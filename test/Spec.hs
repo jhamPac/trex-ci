@@ -1,6 +1,7 @@
 import           Core
 import qualified Docker
 import           RIO
+import qualified RIO.Map              as Map
 import           RIO.NonEmpty.Partial as NE
 import           Test.Hspec
 
@@ -38,8 +39,15 @@ runBuild ds build = do
             threadDelay (1 * 1000 * 1000)
             runBuild ds newBuild
 
+testRunSuccess :: Docker.Service -> IO ()
+testRunSuccess ds = do
+    result <- runBuild ds testBuild
+    result.state `shouldBe` BuildFinished BuildSucceeded
+    Map.elems result.completedSteps `shouldBe` [StepSucceeded, StepSucceeded]
+
 main :: IO ()
 main = hspec do
+    docker <- runIO Docker.createService
     describe "T-Rex CI" do
         it "should run a build (success)" do
-            1 `shouldBe` 1
+            testRunSuccess docker
