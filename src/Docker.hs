@@ -48,7 +48,7 @@ createContainer' options = do
                     [
                         ("Image", Aeson.toJSON image),
                         ("Tty", Aeson.toJSON True),
-                        ("Labels", Aeson.object [("t-rex", "")]),
+                        ("Labels", Aeson.object [("trex", "")]),
                         ("Cmd", "echo T-Rex is here, ROARRR"),
                         ("Entrypoint", Aeson.toJSON [Aeson.String "/bin/sh", "-c"])
                     ]
