@@ -2,6 +2,7 @@ import           Core
 import qualified Docker
 import           RIO
 import           RIO.NonEmpty.Partial as NE
+import           Test.Hspec
 
 makeStep :: Text -> Text -> [Text] -> Step
 makeStep name image commands = Step {
@@ -27,5 +28,18 @@ testBuild = Build {
     completedSteps = mempty
     }
 
+runBuild :: Docker.Service -> Build -> IO Build
+runBuild ds build = do
+    newBuild <- Core.progress ds build
+    case newBuild.state of
+        BuildFinished _ ->
+            pure newBuild
+        _ -> do
+            threadDelay (1 * 1000 * 1000)
+            runBuild ds newBuild
+
 main :: IO ()
-main = pure ()
+main = hspec do
+    describe "T-Rex CI" do
+        it "should run a build (success)" do
+            1 `shouldBe` 1
