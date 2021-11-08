@@ -19,6 +19,15 @@ newtype ContainerExitCode = ContainerExitCode Int
 newtype ContainerId = ContainerId Text
     deriving (Eq, Show)
 
+imageToText :: Image -> Text
+imageToText (Image t) = t
+
+exitCodeToInt :: ContainerExitCode -> Int
+exitCodeToInt (ContainerExitCode code) = code
+
+containerIdToText :: ContainerId -> Text
+containerIdToText (ContainerId t) = t
+
 createContainer :: CreateContainerOptions -> IO ContainerId
 createContainer options = do
     manager <- Socket.newManager "/var/run/docker.sock"
@@ -57,9 +66,16 @@ parseResponse res parser = do
         Left e       -> throwString e
         Right status -> pure status
 
-imageToText :: Image -> Text
-imageToText (Image t) = t
+startContainer :: ContainerId -> IO ()
+startContainer id = do
+    manager <- Socket.newManager "/var/run/docker.sock"
+    let path =
+            "/containers/" <> containerIdToText id <> "/start"
 
-exitCodeToInt :: ContainerExitCode -> Int
-exitCodeToInt (ContainerExitCode code) = code
+    let req = HTTP.defaultRequest
+            & HTTP.setRequestManager manager
+            & HTTP.setRequestPath (encodeUtf8 path)
+            & HTTP.setRequestMethod "POST"
+
+    void $ HTTP.httpBS req
 
