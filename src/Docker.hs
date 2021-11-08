@@ -35,7 +35,10 @@ containerIdToText (ContainerId t) = t
 
 createService :: IO Service
 createService = do
-    pure Service { createContainer = createContainer', startContainer = startContainer'}
+    pure Service {
+        createContainer = createContainer',
+        startContainer = startContainer'
+        }
 
 createContainer' :: CreateContainerOptions -> IO ContainerId
 createContainer' options = do
