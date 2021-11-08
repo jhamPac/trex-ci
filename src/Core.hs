@@ -68,13 +68,17 @@ buildHasNextStep build =
         nextStep = List.find f build.pipeline.steps
         f step = not $ Map.member step.name build.completedSteps
 
-progress :: Build -> IO Build
-progress build =
+progress :: Docker.Service -> Build -> IO Build
+progress ds build =
     case build.state of
         BuildReady      ->
             case buildHasNextStep build of
                 Left result -> pure $ build {state = BuildFinished result}
                 Right step  -> do
+                    let options = Docker.CreateContainerOptions step.image
+                    container <- ds.createContainer options
+                    ds.startContainer container
+
                     let s = BuildRunningState {step = step.name }
                     pure $ build { state = BuildRunning s }
 

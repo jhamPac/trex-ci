@@ -6,6 +6,11 @@ import qualified Network.HTTP.Simple as HTTP
 import           RIO
 import qualified Socket
 
+data Service = Service {
+    createContainer :: CreateContainerOptions -> IO ContainerId,
+    startContainer  :: ContainerId -> IO ()
+    }
+
 data CreateContainerOptions = CreateContainerOptions {
     image :: Image
     }
@@ -28,8 +33,12 @@ exitCodeToInt (ContainerExitCode code) = code
 containerIdToText :: ContainerId -> Text
 containerIdToText (ContainerId t) = t
 
-createContainer :: CreateContainerOptions -> IO ContainerId
-createContainer options = do
+createService :: IO Service
+createService = do
+    pure Service { createContainer = createContainer', startContainer = startContainer'}
+
+createContainer' :: CreateContainerOptions -> IO ContainerId
+createContainer' options = do
     manager <- Socket.newManager "/var/run/docker.sock"
     let image = imageToText options.image
     let body = Aeson.object
@@ -66,8 +75,8 @@ parseResponse res parser = do
         Left e       -> throwString e
         Right status -> pure status
 
-startContainer :: ContainerId -> IO ()
-startContainer id = do
+startContainer' :: ContainerId -> IO ()
+startContainer' id = do
     manager <- Socket.newManager "/var/run/docker.sock"
     let path =
             "/containers/" <> containerIdToText id <> "/start"
