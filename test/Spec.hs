@@ -3,6 +3,7 @@ import qualified Docker
 import           RIO
 import qualified RIO.Map              as Map
 import           RIO.NonEmpty.Partial as NE
+import           System.Process.Typed as Process
 import           Test.Hspec
 
 makeStep :: Text -> Text -> [Text] -> Step
@@ -46,9 +47,13 @@ testRunSuccess ds = do
     result.state `shouldBe` BuildFinished BuildSucceeded
     Map.elems result.completedSteps `shouldBe` [StepSucceeded, StepSucceeded]
 
+cleanUpDocker :: IO ()
+cleanUpDocker = void do
+    Process.readProcessStdout "docker rm -f $(docker ps -aq --filter \"label=trex\")"
+
 main :: IO ()
 main = hspec do
     docker <- runIO Docker.createService
-    describe "T-Rex CI" do
+    beforeAll cleanUpDocker $ describe "T-Rex CI" do
         it "should run a build (success)" do
             testRunSuccess docker
