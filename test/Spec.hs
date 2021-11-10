@@ -7,26 +7,27 @@ import           Test.Hspec
 
 makeStep :: Text -> Text -> [Text] -> Step
 makeStep name image commands = Step {
-    name = StepName name,
-    image = Docker.Image image,
-    commands = NE.fromList commands
+        name = StepName name,
+        image = Docker.Image image,
+        commands = NE.fromList commands
     }
 
 makePipeline :: [Step] -> Pipeline
-makePipeline steps = Pipeline { steps = NE.fromList steps }
+makePipeline steps = Pipeline {
+        steps = NE.fromList steps
+    }
 
 testPipeline :: Pipeline
-testPipeline = makePipeline
-    [
+testPipeline = makePipeline [
         makeStep "Step 1" "ubuntu" ["date"],
         makeStep "Step 2" "ubuntu" ["uname -r"]
     ]
 
 testBuild :: Build
 testBuild = Build {
-    pipeline = testPipeline,
-    state = BuildReady,
-    completedSteps = mempty
+        pipeline = testPipeline,
+        state = BuildReady,
+        completedSteps = mempty
     }
 
 runBuild :: Docker.Service -> Build -> IO Build
