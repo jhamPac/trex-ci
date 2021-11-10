@@ -7,12 +7,12 @@ import           RIO
 import qualified Socket
 
 data Service = Service {
-    createContainer :: CreateContainerOptions -> IO ContainerId,
-    startContainer  :: ContainerId -> IO ()
+        createContainer :: CreateContainerOptions -> IO ContainerId,
+        startContainer  :: ContainerId -> IO ()
     }
 
 data CreateContainerOptions = CreateContainerOptions {
-    image :: Image
+        image :: Image
     }
 
 newtype Image = Image Text
@@ -36,8 +36,8 @@ containerIdToText (ContainerId t) = t
 createService :: IO Service
 createService = do
     pure Service {
-        createContainer = createContainer',
-        startContainer = startContainer'
+            createContainer = createContainer',
+            startContainer = startContainer'
         }
 
 createContainer' :: CreateContainerOptions -> IO ContainerId
