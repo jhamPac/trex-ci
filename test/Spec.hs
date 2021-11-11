@@ -3,6 +3,7 @@ import qualified Docker
 import           RIO
 import qualified RIO.Map              as Map
 import           RIO.NonEmpty.Partial as NE
+import           Runner
 import           System.Process.Typed as Process
 import           Test.Hspec
 
@@ -18,19 +19,6 @@ makePipeline steps = Pipeline {
         steps = NE.fromList steps
     }
 
-testPipeline :: Pipeline
-testPipeline = makePipeline [
-        makeStep "Step 1" "ubuntu" ["date"],
-        makeStep "Step 2" "ubuntu" ["uname -r"]
-    ]
-
-testBuild :: Build
-testBuild = Build {
-        pipeline = testPipeline,
-        state = BuildReady,
-        completedSteps = mempty
-    }
-
 runBuild :: Docker.Service -> Build -> IO Build
 runBuild ds build = do
     newBuild <- Core.progress ds build
@@ -41,9 +29,15 @@ runBuild ds build = do
             threadDelay (1 * 1000 * 1000)
             runBuild ds newBuild
 
-testRunSuccess :: Docker.Service -> IO ()
-testRunSuccess ds = do
-    result <- runBuild ds testBuild
+testRunSuccess :: Runner.Service -> IO ()
+testRunSuccess runner = do
+    build <- runner.prepareBuild $ makePipeline [
+                    makeStep "First step" "ubuntu" ["date"],
+                    makeStep "Second step" "ubuntu" ["uname -r"]
+                ]
+
+    result <- runner.runBuild build
+
     result.state `shouldBe` BuildFinished BuildSucceeded
     Map.elems result.completedSteps `shouldBe` [StepSucceeded, StepSucceeded]
 
@@ -54,6 +48,7 @@ cleanUpDocker = void do
 main :: IO ()
 main = hspec do
     docker <- runIO Docker.createService
+    runner <- runIO $ Runner.createService docker
     beforeAll cleanUpDocker $ describe "T-Rex CI" do
         it "should run a build (success)" do
-            testRunSuccess docker
+            testRunSuccess runner
