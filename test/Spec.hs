@@ -19,15 +19,9 @@ makePipeline steps = Pipeline {
         steps = NE.fromList steps
     }
 
-runBuild :: Docker.Service -> Build -> IO Build
-runBuild ds build = do
-    newBuild <- Core.progress ds build
-    case newBuild.state of
-        BuildFinished _ ->
-            pure newBuild
-        _ -> do
-            threadDelay (1 * 1000 * 1000)
-            runBuild ds newBuild
+cleanUpDocker :: IO ()
+cleanUpDocker = void do
+    Process.readProcessStdout "docker rm -f $(docker ps -aq --filter \"label=trex\")"
 
 testRunSuccess :: Runner.Service -> IO ()
 testRunSuccess runner = do
@@ -40,10 +34,6 @@ testRunSuccess runner = do
 
     result.state `shouldBe` BuildFinished BuildSucceeded
     Map.elems result.completedSteps `shouldBe` [StepSucceeded, StepSucceeded]
-
-cleanUpDocker :: IO ()
-cleanUpDocker = void do
-    Process.readProcessStdout "docker rm -f $(docker ps -aq --filter \"label=trex\")"
 
 main :: IO ()
 main = hspec do
