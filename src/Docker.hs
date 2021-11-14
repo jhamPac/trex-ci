@@ -8,12 +8,19 @@ import qualified Socket
 
 data Service = Service {
         createContainer :: CreateContainerOptions -> IO ContainerId,
-        startContainer  :: ContainerId -> IO ()
+        startContainer  :: ContainerId -> IO (),
+        containerStatus :: ContainerId -> IO ContainerStatus
     }
 
 data CreateContainerOptions = CreateContainerOptions {
         image :: Image
     }
+
+data ContainerStatus
+    = ContainerRunning
+    | ContainerExited ContainerExitCode
+    | ContainerOther Text
+    deriving (Eq, Show)
 
 newtype Image = Image Text
     deriving (Eq, Show)
@@ -37,7 +44,8 @@ createService :: IO Service
 createService = do
     pure Service {
             createContainer = createContainer',
-            startContainer = startContainer'
+            startContainer = startContainer',
+            containerStatus = undefined
         }
 
 createContainer' :: CreateContainerOptions -> IO ContainerId
