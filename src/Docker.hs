@@ -48,6 +48,9 @@ exitCodeToInt (ContainerExitCode code) = code
 containerIdToText :: ContainerId -> Text
 containerIdToText (ContainerId t) = t
 
+volumeToText :: Volume -> Text
+volumeToText (Volume v) = v
+
 createService :: IO Service
 createService = do
     manager <- Socket.newManager "/var/run/docker.sock"

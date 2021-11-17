@@ -60,7 +60,7 @@ main :: IO ()
 main = hspec do
     docker <- runIO Docker.createService
     runner <- runIO $ Runner.createService docker
-    beforeAll cleanUpDocker $ describe "T-Rex CI" do
+    afterAll_ cleanUpDocker $ describe "T-Rex CI" do
         it "should run a build (success)" do
             testRunSuccess runner
 
