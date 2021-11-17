@@ -2,8 +2,10 @@ module Core where
 
 import qualified Docker
 import           RIO
-import           RIO.List as List
-import           RIO.Map  as Map
+import           RIO.List     as List
+import           RIO.Map      as Map
+import qualified RIO.NonEmpty as NonEmpty
+import qualified RIO.Text     as Text
 
 data Pipeline = Pipeline {
         steps :: NonEmpty Step
