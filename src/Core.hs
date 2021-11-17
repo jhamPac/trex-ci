@@ -1,11 +1,12 @@
 module Core where
 
+import qualified Data.Time.Clock.POSIX as Time
 import qualified Docker
 import           RIO
-import           RIO.List     as List
-import           RIO.Map      as Map
-import qualified RIO.NonEmpty as NonEmpty
-import qualified RIO.Text     as Text
+import           RIO.List              as List
+import           RIO.Map               as Map
+import qualified RIO.NonEmpty          as NonEmpty
+import qualified RIO.Text              as Text
 
 data Pipeline = Pipeline {
         steps :: NonEmpty Step
@@ -48,6 +49,28 @@ data BuildResult
 
 newtype StepName = StepName Text
     deriving (Eq, Show, Ord)
+
+data Log = Log {
+        output :: ByteString,
+        step   :: StepName
+    }
+
+type LogCollection = Map StepName CollectionStatus
+
+data CollectionStatus
+    = CollectionReady
+    | CollectionLogs Docker.ContainerId Time.POSIXTime
+    | CollectionFinished
+    deriving (Eq, Show)
+
+collectLogs
+    :: Docker.Service
+    -> LogCollection
+    -> Build
+    -> IO (LogCollection, [Log])
+
+collectLogs collection build = do
+    undefined
 
 stepNameToText :: StepName -> Text
 stepNameToText (StepName t) = t
