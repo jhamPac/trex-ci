@@ -9,7 +9,8 @@ import qualified Socket
 data Service = Service {
         createContainer :: CreateContainerOptions -> IO ContainerId,
         startContainer  :: ContainerId -> IO (),
-        containerStatus :: ContainerId -> IO ContainerStatus
+        containerStatus :: ContainerId -> IO ContainerStatus,
+        createVolume    :: IO Volume
     }
 
 data CreateContainerOptions = CreateContainerOptions {
@@ -30,6 +31,9 @@ newtype ContainerExitCode = ContainerExitCode Int
     deriving (Eq, Show)
 
 newtype ContainerId = ContainerId Text
+    deriving (Eq, Show)
+
+newtype Volume = Volume Text
     deriving (Eq, Show)
 
 type RequestBuilder = Text -> HTTP.Request
@@ -56,7 +60,8 @@ createService = do
     pure Service {
             createContainer = createContainer' makeReq,
             startContainer = startContainer' makeReq,
-            containerStatus = containerStatus' makeReq
+            containerStatus = containerStatus' makeReq,
+            createVolume = createVolume' makeReq
         }
 
 createContainer' :: RequestBuilder -> CreateContainerOptions -> IO ContainerId
@@ -120,6 +125,23 @@ containerStatus' makeReq container = do
                         other -> pure $ ContainerOther other
 
     let req = makeReq $ "/containers/" <> containerIdToText container <> "/json"
+
+    res <- HTTP.httpBS req
+    parseResponse res parser
+
+createVolume' :: RequestBuilder -> IO Volume
+createVolume' makeReq = do
+    let body = Aeson.object [
+                    ("Labels", Aeson.object [("trex", "")])
+                ]
+
+    let req = makeReq "/volume/create"
+                & HTTP.setRequestMethod "POST"
+                & HTTP.setRequestBodyJSON body
+
+    let parser = Aeson.withObject "create-volume" $ \o -> do
+            name <- o .: "Name"
+            pure $ Volume name
 
     res <- HTTP.httpBS req
     parseResponse res parser
