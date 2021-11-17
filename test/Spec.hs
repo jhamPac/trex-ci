@@ -22,6 +22,7 @@ makePipeline steps = Pipeline {
 cleanUpDocker :: IO ()
 cleanUpDocker = void do
     Process.readProcessStdout "docker rm -f $(docker ps -aq --filter \"label=trex\")"
+    Process.readProcessStdout "docker volume rm -f $(docker volume ls --filter \"label=trex\")"
 
 testRunSuccess :: Runner.Service -> IO ()
 testRunSuccess runner = do
