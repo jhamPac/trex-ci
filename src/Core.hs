@@ -72,6 +72,32 @@ collectLogs
 collectLogs collection build = do
     undefined
 
+initLogCollection :: Pipeline -> LogCollection
+initLogCollection pipeline = Map.fromList $ NonEmpty.toList steps
+    where
+        steps = pipeline.steps <&> \step -> (step.name, CollectionReady)
+
+updateCollection
+    :: BuildState
+    -> LogCollection
+    -> LogCollection
+
+updateCollection state collection =
+    Map.mapWithKey f collection
+    where
+        f step = case step of
+            CollectionReady ->
+                case state of
+                    BuildRunning state ->
+                        if state.step == step
+                            then CollectionLogs state.container 0
+                            else CollectionReady
+                    _ -> CollectionReady
+
+            CollectionLogs _ _ -> undefined
+
+            CollectionFinished -> CollectionFinished
+
 stepNameToText :: StepName -> Text
 stepNameToText (StepName t) = t
 
