@@ -135,7 +135,7 @@ createVolume' makeReq = do
                     ("Labels", Aeson.object [("trex", "")])
                 ]
 
-    let req = makeReq "/volume/create"
+    let req = makeReq "/volumes/create"
                 & HTTP.setRequestMethod "POST"
                 & HTTP.setRequestBodyJSON body
 
