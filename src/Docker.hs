@@ -13,7 +13,8 @@ data Service = Service {
     }
 
 data CreateContainerOptions = CreateContainerOptions {
-        image :: Image
+        image  :: Image,
+        script :: Text
     }
 
 data ContainerStatus
@@ -66,8 +67,9 @@ createContainer' makeReq options = do
                         ("Image", Aeson.toJSON image),
                         ("Tty", Aeson.toJSON True),
                         ("Labels", Aeson.object [("trex", "")]),
-                        ("Cmd", "echo T-Rex is here, ROARRR"),
-                        ("Entrypoint", Aeson.toJSON [Aeson.String "/bin/sh", "-c"])
+                        ("Entrypoint", Aeson.toJSON [Aeson.String "/bin/sh", "-c"]),
+                        ("Cmd", "echo \"$TREX_SCRIPT\" | /bin/sh"),
+                        ("Env", Aeson.toJSON ["TREX_SCRIPT=" <> options.script])
                     ]
     let path = "/containers/create"
     let req = makeReq path
