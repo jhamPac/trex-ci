@@ -79,7 +79,8 @@ progress docker build =
                     let script = Text.unlines $ ["set -ex"] <> NonEmpty.toList step.commands
                     let options = Docker.CreateContainerOptions {
                             image = step.image,
-                            script = script
+                            script = script,
+                            volume = build.volume
                         }
                     container <- docker.createContainer options
                     docker.startContainer container

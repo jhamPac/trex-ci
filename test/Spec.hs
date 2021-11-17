@@ -67,5 +67,5 @@ main = hspec do
         it "should run a build (failure)" do
             testRunFailure runner
 
-        it "should share workspace between steps" do
+        it "should share workspace between steps (share)" do
             testSharedWorkspace docker runner
