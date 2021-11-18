@@ -79,22 +79,27 @@ initLogCollection pipeline = Map.fromList $ NonEmpty.toList steps
 
 updateCollection
     :: BuildState
+    -> Time.POSIXTime
     -> LogCollection
     -> LogCollection
 
-updateCollection state collection =
+updateCollection state now lastCollection collection =
     Map.mapWithKey f collection
     where
+        update step since nextState =
+            case state of
+                BuildRunning state ->
+                    if state.step == step
+                        then CollectingLogs state.container since
+                        else nextState
+                _ -> nextState
+
         f step = case step of
             CollectionReady ->
-                case state of
-                    BuildRunning state ->
-                        if state.step == step
-                            then CollectionLogs state.container 0
-                            else CollectionReady
-                    _ -> CollectionReady
+                update step 0 CollectionReady
 
-            CollectionLogs _ _ -> undefined
+            CollectionLogs _ _ ->
+                update step lastCollection CollectionFinished
 
             CollectionFinished -> CollectionFinished
 
