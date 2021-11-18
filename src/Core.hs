@@ -83,25 +83,48 @@ updateCollection
     -> LogCollection
     -> LogCollection
 
-updateCollection state now lastCollection collection =
+updateCollection state lastTimestamp collection =
     Map.mapWithKey f collection
     where
-        update step since nextState =
-            case state of
-                BuildRunning state ->
-                    if state.step == step
-                        then CollectingLogs state.container since
-                        else nextState
-                _ -> nextState
-
-        f step = case step of
+        f step = \case
             CollectionReady ->
                 update step 0 CollectionReady
 
             CollectionLogs _ _ ->
-                update step lastCollection CollectionFinished
+                update step lastTimestamp CollectionFinished
 
             CollectionFinished -> CollectionFinished
+
+        update step timestamp nextState =
+            case state of
+                BuildRunning state ->
+                    if state.step == step
+                        then CollectionLogs state.container timestamp
+                        else nextState
+                _ -> nextState
+
+runCollection
+    :: Docker.Service
+    -> Time.POSIXTime
+    -> LogCollection
+    -> IO [Log]
+
+runCollection docker collectUntil collection = do
+    logs <- Map.traverseWithKey f collection
+    undefined
+    where
+        f step = \case
+            CollectionReady -> pure []
+            CollectionFinished -> pure []
+            CollectionLogs container since -> do
+                let options =
+                        Docker.FetchLogsOptions {
+                                container = container,
+                                since = since,
+                                until = collectUntil
+                            }
+                output <- docker.fetchLogs options
+                pure [Log {step = step, output = output}]
 
 stepNameToText :: StepName -> Text
 stepNameToText (StepName t) = t
