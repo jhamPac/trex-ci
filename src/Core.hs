@@ -74,11 +74,34 @@ collectLogs
     -> Build
     -> IO (LogCollection, [Log])
 
-collectLogs collection build = do
+collectLogs docker collection build = do
     now <- Time.getPOSIXTime
     logs <- runCollection docker now collection
     let newCollection = updateCollection build.state now collection
     pure (newCollection, logs)
+
+runCollection
+    :: Docker.Service
+    -> Time.POSIXTime
+    -> LogCollection
+    -> IO [Log]
+
+runCollection docker collectUntil collection = do
+    logs <- Map.traverseWithKey f collection
+    pure $ concat (Map.elems logs)
+    where
+        f step = \case
+            CollectionReady -> pure []
+            CollectionFinished -> pure []
+            CollectionLogs container since -> do
+                let options =
+                        Docker.FetchLogsOptions {
+                                container = container,
+                                since = since,
+                                until = collectUntil
+                            }
+                output <- docker.fetchLogs options
+                pure [Log {step = step, output = output}]
 
 updateCollection
     :: BuildState
@@ -105,29 +128,6 @@ updateCollection state lastTimestamp collection =
                         then CollectionLogs state.container timestamp
                         else nextState
                 _ -> nextState
-
-runCollection
-    :: Docker.Service
-    -> Time.POSIXTime
-    -> LogCollection
-    -> IO [Log]
-
-runCollection docker collectUntil collection = do
-    logs <- Map.traverseWithKey f collection
-    pure $ concat (Map.elems logs)
-    where
-        f step = \case
-            CollectionReady -> pure []
-            CollectionFinished -> pure []
-            CollectionLogs container since -> do
-                let options =
-                        Docker.FetchLogsOptions {
-                                container = container,
-                                since = since,
-                                until = collectUntil
-                            }
-                output <- docker.fetchLogs options
-                pure [Log {step = step, output = output}]
 
 stepNameToText :: StepName -> Text
 stepNameToText (StepName t) = t
