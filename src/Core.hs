@@ -63,6 +63,11 @@ data CollectionStatus
     | CollectionFinished
     deriving (Eq, Show)
 
+initLogCollection :: Pipeline -> LogCollection
+initLogCollection pipeline = Map.fromList $ NonEmpty.toList steps
+    where
+        steps = pipeline.steps <&> \step -> (step.name, CollectionReady)
+
 collectLogs
     :: Docker.Service
     -> LogCollection
@@ -70,12 +75,10 @@ collectLogs
     -> IO (LogCollection, [Log])
 
 collectLogs collection build = do
-    undefined
-
-initLogCollection :: Pipeline -> LogCollection
-initLogCollection pipeline = Map.fromList $ NonEmpty.toList steps
-    where
-        steps = pipeline.steps <&> \step -> (step.name, CollectionReady)
+    now <- Time.getPOSIXTime
+    logs <- runCollection docker now collection
+    let newCollection = updateCollection build.state now collection
+    pure (newCollection, logs)
 
 updateCollection
     :: BuildState
@@ -111,7 +114,7 @@ runCollection
 
 runCollection docker collectUntil collection = do
     logs <- Map.traverseWithKey f collection
-    undefined
+    pure $ concat (Map.elems logs)
     where
         f step = \case
             CollectionReady -> pure []
