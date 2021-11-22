@@ -57,6 +57,27 @@ testSharedWorkspace docker runner = do
     result.state `shouldBe` BuildFinished BuildSucceeded
     Map.elems result.completedSteps `shouldBe` [StepSucceeded, StepSucceeded]
 
+emptyHooks :: Runner.Hooks
+emptyHooks = Runner.Hooks {
+        logCollected = \_ -> pure ()
+    }
+
+testLogCollection :: Runner.Service -> IO ()
+testLogCollection runner = do
+    let onLog :: Log -> IO ()
+        onLog log = do
+            pure ()
+    let hooks = Runner.Hooks { logCollected = onLog }
+
+    build <- runner.prepareBuild $ makePipeline [
+                    makeStep "Long step" "ubuntu" ["echo hello", "sleep 2", "echo world"],
+                    makeStep "Echo Linux" "ubunut" ["uname -s"]
+                ]
+
+    result <- runner.runBuild hooks build
+    result.state `shouleBe` BuildFinished BuildSucceeded
+    Map.elems result.completedSteps `shouldBe` [StepSucceeded, StepSucceeded]
+
 main :: IO ()
 main = hspec do
     docker <- runIO Docker.createService
