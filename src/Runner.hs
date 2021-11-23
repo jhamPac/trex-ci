@@ -32,9 +32,15 @@ prepareBuild' docker pipeline = do
 
 runBuild' :: Docker.Service -> Hooks -> Build -> IO Build
 runBuild' docker hooks build = do
-    newBuild <- Core.progress docker build
-    case newBuild.state of
-        BuildFinished _ -> pure newBuild
-        _ -> do
-            threadDelay (1 * 1000 * 1000)
-            runBuild' docker hooks newBuild
+    loop build $ Core.initLogCollection build.pipeline
+    where
+        loop :: Build -> LogCollection -> IO Build
+        loop build collection = do
+            (newCollection, logs) <- Core.collectLogs docker collection
+            traverse_ hooks.logCollected logs
+            newBuild <- Core.progress docker build
+            case newBuild.state of
+                BuildFinished _ -> pure newBuild
+                _ -> do
+                    threadDelay (1 * 1000 * 1000)
+                    loop newBuild newCollection
