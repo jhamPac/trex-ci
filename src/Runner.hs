@@ -36,8 +36,9 @@ runBuild' docker hooks build = do
     where
         loop :: Build -> LogCollection -> IO Build
         loop build collection = do
-            (newCollection, logs) <- Core.collectLogs docker collection
+            (newCollection, logs) <- Core.collectLogs docker collection build
             traverse_ hooks.logCollected logs
+
             newBuild <- Core.progress docker build
             case newBuild.state of
                 BuildFinished _ -> pure newBuild

@@ -67,6 +67,7 @@ emptyHooks = Runner.Hooks {
 testLogCollection :: Runner.Service -> IO ()
 testLogCollection runner = do
     expected <- newMVar $ Set.fromList ["hello", "world", "Linux"]
+
     let onLog :: Log -> IO ()
         onLog log = do
             remaining <- readMVar expected
@@ -79,12 +80,13 @@ testLogCollection runner = do
 
     build <- runner.prepareBuild $ makePipeline [
                     makeStep "Long step" "ubuntu" ["echo hello", "sleep 2", "echo world"],
-                    makeStep "Echo Linux" "ubunut" ["uname -s"]
+                    makeStep "Echo Linux" "ubuntu" ["uname -s"]
                 ]
 
     result <- runner.runBuild hooks build
     result.state `shouldBe` BuildFinished BuildSucceeded
     Map.elems result.completedSteps `shouldBe` [StepSucceeded, StepSucceeded]
+
     readMVar expected >>= \logs -> logs `shouldBe` Set.empty
 
 main :: IO ()
