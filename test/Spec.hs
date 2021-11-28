@@ -12,7 +12,7 @@ import           Test.Hspec
 makeStep :: Text -> Text -> [Text] -> Step
 makeStep name image commands = Step {
         name = StepName name,
-        image = Docker.Image image,
+        image = Docker.Image { name = image, tag = "latest" },
         commands = NE.fromList commands
     }
 

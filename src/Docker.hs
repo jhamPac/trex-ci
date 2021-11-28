@@ -34,7 +34,7 @@ data FetchLogsOptions = FetchLogsOptions {
         until     :: Time.POSIXTime
     }
 
-newtype Image = Image {
+data Image = Image {
         name :: Text,
         tag  :: Text
     }
