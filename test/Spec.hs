@@ -1,4 +1,5 @@
 import           Core
+import           Data.Yaml            as Yaml
 import qualified Docker
 import           RIO
 import qualified RIO.ByteString       as ByteString
@@ -102,11 +103,21 @@ testImagePull runner = do
     result.state `shouldBe` BuildFinished BuildSucceeded
     Map.elems result.completedSteps `shouldBe` [StepSucceeded]
 
+testYamlDecoding :: Runner.Service -> IO ()
+testYamlDecoding runner = do
+    pipeline <- Yaml.decodeFileThrow "test/pipeline.yaml"
+    build <- runner.prepareBuild pipeline
+    result <- runner.runBuild emptyHooks build
+    result.state `shouldBe` BuildFinished BuildSucceeded
+
 main :: IO ()
 main = hspec do
     docker <- runIO Docker.createService
     runner <- runIO $ Runner.createService docker
     afterAll_ cleanUpDocker $ describe "T-Rex CI" do
+        it "should decode yaml files" do
+            testYamlDecoding runner
+
         it "should pull images" do
             testImagePull runner
 

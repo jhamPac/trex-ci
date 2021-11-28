@@ -1,5 +1,6 @@
 module Core where
 
+import           Data.Aeson            as Aeson
 import qualified Data.Time.Clock.POSIX as Time
 import qualified Docker
 import           RIO
@@ -16,7 +17,7 @@ data Step = Step {
         name     :: StepName,
         commands :: NonEmpty Text,
         image    :: Docker.Image
-    } deriving (Eq, Show)
+    } deriving (Eq, Show, Generic, Aeson.FromJSON)
 
 data Build = Build {
         pipeline       :: Pipeline,
@@ -48,7 +49,7 @@ data BuildResult
     deriving (Eq, Show)
 
 newtype StepName = StepName Text
-    deriving (Eq, Show, Ord)
+    deriving (Eq, Show, Ord, Generic, Aeson.FromJSON)
 
 data Log = Log {
         output :: ByteString,
