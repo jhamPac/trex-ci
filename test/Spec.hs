@@ -89,18 +89,34 @@ testLogCollection runner = do
 
     readMVar expected >>= \logs -> logs `shouldBe` Set.empty
 
+testImagePull :: Runner.Service -> IO ()
+testImagePull runner = do
+    Process.readProcessStdout "docker rmi -f busybox"
+
+    build <- runner.prepareBuild $ makePipeline [
+                    makeStep "First step" "busybox" ["date"]
+                ]
+
+    result <- runner.runBuild emptyHooks build
+
+    result.state `shouldBe` BuildFinished BuildSucceeded
+    Map.elems result.completedSteps `shouldBe` [StepSucceeded]
+
 main :: IO ()
 main = hspec do
     docker <- runIO Docker.createService
     runner <- runIO $ Runner.createService docker
     afterAll_ cleanUpDocker $ describe "T-Rex CI" do
+        it "should pull images" do
+            testImagePull runner
+
         it "should run a build (success)" do
             testRunSuccess runner
 
         it "should run a build (failure)" do
             testRunFailure runner
 
-        it "should share workspace between steps (share)" do
+        it "should share workspace between steps" do
             testSharedWorkspace docker runner
 
         it "should collect logs" do
