@@ -5,6 +5,8 @@ import           Data.Aeson.Types      as Aeson.Types
 import qualified Data.Time.Clock.POSIX as Time
 import qualified Network.HTTP.Simple   as HTTP
 import           RIO
+import qualified RIO.Text              as Text
+import qualified RIO.Text.Partial      as Text.Partial
 import qualified Socket
 
 data Service = Service {
@@ -39,6 +41,13 @@ data Image = Image {
         tag  :: Text
     }
     deriving (Eq, Show)
+
+instance Aeson.FromJSON Image where
+    parseJSON = Aeson.withText "parse-image" $ \image -> do
+        case Text.Partial.splitOn ":" image of
+            [name] -> pure $ Image { name = name, tag = "latest" }
+            [name, tag] -> pure $ Image { name = name, tag = tag }
+            _ -> fail $ "Image has too many colons " <> Text.unpack image
 
 newtype ContainerExitCode = ContainerExitCode Int
     deriving (Eq, Show)

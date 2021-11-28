@@ -10,7 +10,7 @@ import qualified RIO.Text              as Text
 
 data Pipeline = Pipeline {
         steps :: NonEmpty Step
-    } deriving (Eq, Show)
+    } deriving (Eq, Show, Generic, Aeson.FromJSON)
 
 data Step = Step {
         name     :: StepName,
