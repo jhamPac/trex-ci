@@ -37,6 +37,9 @@ data BuildState
     | BuildFinished BuildResult
     deriving (Eq, Show)
 
+newtype BuildNumber = BuildNumber Int
+    deriving (Eq, Show)
+
 data BuildRunningState = BuildRunningState {
         step      :: StepName,
         container :: Docker.ContainerId
@@ -137,6 +140,9 @@ exitCodeToStepResult :: Docker.ContainerExitCode -> StepResult
 exitCodeToStepResult exit
     | Docker.exitCodeToInt exit == 0 = StepSucceeded
     | otherwise = StepFailed exit
+
+buildNumberToInt :: BuildNumber -> Int
+buildNumberToInt (BuildNumber n) = n
 
 buildHasNextStep :: Build -> Either BuildResult Step
 buildHasNextStep build =

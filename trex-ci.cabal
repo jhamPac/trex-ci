@@ -28,6 +28,7 @@ library
       Agent
       Core
       Docker
+      JobHandler
       Runner
       Socket
   other-modules:
