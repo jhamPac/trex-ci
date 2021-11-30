@@ -58,6 +58,7 @@ data Log = Log {
         output :: ByteString,
         step   :: StepName
     }
+    deriving (Eq, Show)
 
 type LogCollection = Map StepName CollectionStatus
 
