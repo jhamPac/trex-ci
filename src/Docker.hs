@@ -1,5 +1,6 @@
 module Docker where
 
+import qualified Codec.Serialise       as Serialise
 import qualified Data.Aeson            as Aeson
 import           Data.Aeson.Types      as Aeson.Types
 import qualified Data.Time.Clock.POSIX as Time
@@ -40,7 +41,7 @@ data Image = Image {
         name :: Text,
         tag  :: Text
     }
-    deriving (Eq, Show)
+    deriving (Eq, Show, Generic, Serialise.Serialise)
 
 instance Aeson.FromJSON Image where
     parseJSON = Aeson.withText "parse-image" $ \image -> do
@@ -50,13 +51,13 @@ instance Aeson.FromJSON Image where
             _ -> fail $ "Image has too many colons " <> Text.unpack image
 
 newtype ContainerExitCode = ContainerExitCode Int
-    deriving (Eq, Show)
+    deriving (Eq, Show, Generic, Serialise.Serialise)
 
 newtype ContainerId = ContainerId Text
-    deriving (Eq, Show)
+    deriving (Eq, Show, Generic, Serialise.Serialise)
 
 newtype Volume = Volume Text
-    deriving (Eq, Show)
+    deriving (Eq, Show, Generic, Serialise.Serialise)
 
 type RequestBuilder = Text -> HTTP.Request
 
