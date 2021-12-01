@@ -18,4 +18,11 @@ run config handler =
                 handler.dispatchCmd
 
             Scotty.raw $ Serialise.serialise cmd
-        pure ()
+
+        Scotty.post "/agent/send" do
+            msg <- Serialise.deserialise <$> Scotty.body
+
+            Scotty.liftAndCatchIO do
+                handler.processMsg msg
+
+            Scotty.json ("message processed" :: Text)
