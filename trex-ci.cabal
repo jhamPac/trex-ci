@@ -30,6 +30,7 @@ library
       Docker
       JobHandler
       Runner
+      Server
       Socket
   other-modules:
       Paths_trex_ci
