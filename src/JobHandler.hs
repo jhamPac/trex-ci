@@ -1,7 +1,14 @@
 module JobHandler where
 
+import qualified Agent
 import           Core
 import           RIO
+
+data Service = Service {
+        queueJob    :: Pipeline -> IO BuildNumber,
+        dispatchCmd :: IO (Maybe Agent.Cmd),
+        processMsg  :: Agent.Msg -> IO ()
+    }
 
 data Job = Job {
         pipeline :: Pipeline,
