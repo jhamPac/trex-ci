@@ -4,6 +4,7 @@ import qualified Codec.Serialise     as Serialise
 import           Core
 import qualified Network.HTTP.Simple as HTTP
 import           RIO
+import qualified Runner
 
 data Config = Config { endpoint :: String }
 
@@ -16,8 +17,9 @@ data Msg
     | BuildUpdated BuildNumber Build
     deriving (Eq, Show, Generic, Serialise.Serialise)
 
-run :: Config -> IO ()
-run config = forever do
+run :: Config -> Runner.Service -> IO ()
+run config runner = forever do
+
         endpoint <- HTTP.parseRequest config.endpoint
 
         let req = endpoint
@@ -26,4 +28,17 @@ run config = forever do
 
         res <- HTTP.httpLBS req
         let cmd = Serialise.deserialise (HTTP.getResponseBody res) :: Maybe Cmd
+
+        traverse_ (runCommand runner) cmd
+
         threadDelay (1 * 1000 * 1000)
+
+runCommand :: Runner.Service -> Cmd -> IO ()
+runCommand runner = \case
+    StartBuild number pipeline -> do
+        let hooks = Runner.Hooks {
+                    logCollected = traceShowIO
+                }
+
+        build <- runner.prepareBuild pipeline
+        void $ runner.runBuild hooks build
