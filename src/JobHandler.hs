@@ -7,7 +7,8 @@ import           RIO
 data Service = Service {
         queueJob    :: Pipeline -> IO BuildNumber,
         dispatchCmd :: IO (Maybe Agent.Cmd),
-        processMsg  :: Agent.Msg -> IO ()
+        processMsg  :: Agent.Msg -> IO (),
+        findJob     :: BuildNumber -> IO (Maybe Job)
     }
 
 data Job = Job {

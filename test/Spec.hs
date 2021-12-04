@@ -1,13 +1,17 @@
+import           Agent
+import qualified Control.Concurrent.Async as Async
 import           Core
-import           Data.Yaml            as Yaml
+import           Data.Yaml                as Yaml
 import qualified Docker
+import           JobHandler
 import           RIO
-import qualified RIO.ByteString       as ByteString
-import qualified RIO.Map              as Map
-import           RIO.NonEmpty.Partial as NE
-import qualified RIO.Set              as Set
+import qualified RIO.ByteString           as ByteString
+import qualified RIO.Map                  as Map
+import           RIO.NonEmpty.Partial     as NE
+import qualified RIO.Set                  as Set
 import           Runner
-import           System.Process.Typed as Process
+import           Server
+import           System.Process.Typed     as Process
 import           Test.Hspec
 
 makeStep :: Text -> Text -> [Text] -> Step
@@ -110,6 +114,34 @@ testYamlDecoding runner = do
     result <- runner.runBuild emptyHooks build
     result.state `shouldBe` BuildFinished BuildSucceeded
 
+testServerAndAgent :: Runner.Service -> IO ()
+testServerAndAgent runner = do
+    let handler = undefined :: JobHandler.Service
+
+    void $ Async.async do
+        Server.run (Server.Config 4000) handler
+
+    void $ Async.async do
+        Agent.run (Agent.Config "http://localhost:4001") runner
+
+    let pipeline = makePipeline [makeStep "agent-test" "busybox" ["echo Agent Yello is live"]]
+
+    number <- handler.queueJob pipeline
+    checkBuild handler number
+
+    pure ()
+
+checkBuild :: JobHander.Service -> BuildNumber -> IO ()
+checkBuild handler number = loop
+    where loop = do
+            Just job <- handler.findJob number
+            case job.state of
+                JobHandler.JobScheduled build -> do
+                    case build.state of
+                        BuildFinished s -> s `shouldBe` BuildSucceeded
+                        _               -> loop
+                _ -> loop
+
 main :: IO ()
 main = hspec do
     docker <- runIO Docker.createService
@@ -132,3 +164,6 @@ main = hspec do
 
         it "should collect logs" do
             testLogCollection runner
+
+        it "should run server and agent" do
+            testServerAndAgent
