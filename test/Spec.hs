@@ -118,16 +118,23 @@ testServerAndAgent :: Runner.Service -> IO ()
 testServerAndAgent runner = do
     let handler = undefined :: JobHandler.Service
 
-    void $ Async.async do
+    serverThread <- Async.async do
         Server.run (Server.Config 4000) handler
 
-    void $ Async.async do
+    Async.link serverThread
+
+    agentThread <- Async.async do
         Agent.run (Agent.Config "http://localhost:4001") runner
+
+    Async.link agentThread
 
     let pipeline = makePipeline [makeStep "agent-test" "busybox" ["echo Agent Yello is live"]]
 
     number <- handler.queueJob pipeline
     checkBuild handler number
+
+    Async.cancel serverThread
+    Async.cancel agentThread
 
     pure ()
 
