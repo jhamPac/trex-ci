@@ -1,15 +1,21 @@
 module JobHandler.Memory where
 
+import qualified Control.Concurrent.STM as STM
 import           Core
-import           RIO
-import qualified RIO.Map    as Map
-
 import qualified JobHandler
+import           RIO
+import qualified RIO.Map                as Map
 
 createService :: IO JobHandler.Service
 createService = do
+    state <- STM.newTVarIO State {
+                jobs = mempty,
+                nextBuild = 1
+            }
+
     pure JobHandler.Service {
-                queueJob = \_ -> undefined,
+                queueJob = \pipeline -> STM.atomically do
+                    STM.stateTVar state $ queueJob' pipeline,
                 findJob = \_ -> undefined,
                 dispatchCmd = pure undefined,
                 processMsg = \_ -> undefined
