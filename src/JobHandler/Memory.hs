@@ -1,5 +1,6 @@
 module JobHandler.Memory where
 
+import qualified Agent
 import qualified Control.Concurrent.STM as STM
 import           Core
 import qualified JobHandler
@@ -45,3 +46,16 @@ queueJob' pipeline state = (number, updatedState)
 
 findJob' :: BuildNumber -> State -> Maybe JobHandler.Job
 findJob' number state = Map.lookup number state.jobs
+
+dispatchCmd' :: State -> (Maybe Agent.Cmd, State)
+dispatchCmd' state =
+    case List.find queued $ Map.toList state.jobs of
+        Just (number, job) ->
+            let updatedJob = job { state = JobHandler.JobAssigned }
+                updatedState = Map.insert number updatedJob state.jobs
+                cmd = Just $ Agent.StartBuild number job.pipeline
+            in (cmd, state { jobs = updatedState })
+
+        _ -> (Nothing, state)
+    where
+        queued (_, job) = job.state == JobHandler.JobQueued
