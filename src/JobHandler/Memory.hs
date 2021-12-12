@@ -16,7 +16,11 @@ createService = do
     pure JobHandler.Service {
                 queueJob = \pipeline -> STM.atomically do
                     STM.stateTVar state $ queueJob' pipeline,
-                findJob = \_ -> undefined,
+
+                findJob = \number -> STM.atomically do
+                    s <- STM.readTVar state
+                    pure $ findJob' number s,
+
                 dispatchCmd = pure undefined,
                 processMsg = \_ -> undefined
             }
@@ -39,3 +43,5 @@ queueJob' pipeline state = (number, updatedState)
                 nextBuild = state.nextBuild + 1
             }
 
+findJob' :: BuildNumber -> State -> Maybe JobHandler.Job
+findJob' number state = Map.lookup number state.jobs
