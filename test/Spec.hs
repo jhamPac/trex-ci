@@ -174,4 +174,4 @@ main = hspec do
             testLogCollection runner
 
         it "should run server and agent" do
-            testServerAndAgent
+            testServerAndAgent runner
