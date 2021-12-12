@@ -139,7 +139,7 @@ testServerAndAgent runner = do
 
     pure ()
 
-checkBuild :: JobHander.Service -> BuildNumber -> IO ()
+checkBuild :: JobHandler.Service -> BuildNumber -> IO ()
 checkBuild handler number = loop
     where loop = do
             Just job <- handler.findJob number

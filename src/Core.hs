@@ -39,12 +39,12 @@ data BuildState
     deriving (Eq, Show, Generic, Serialise.Serialise)
 
 newtype BuildNumber = BuildNumber Int
-    deriving (Eq, Show, Generic, Serialise.Serialise)
+    deriving (Eq, Show, Ord, Generic, Serialise.Serialise)
 
 data BuildRunningState = BuildRunningState {
         step      :: StepName,
         container :: Docker.ContainerId
-    } deriving (Eq, Show, Ord, Generic, Serialise.Serialise)
+    } deriving (Eq, Show, Generic, Serialise.Serialise)
 
 data BuildResult
     = BuildSucceeded
