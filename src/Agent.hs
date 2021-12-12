@@ -5,6 +5,7 @@ import           Core
 import qualified Network.HTTP.Simple as HTTP
 import           RIO
 import qualified Runner
+import qualified System.Log.Logger   as Logger
 
 data Config = Config { endpoint :: String }
 
@@ -30,6 +31,9 @@ run config runner = forever do
         let cmd = Serialise.deserialise (HTTP.getResponseBody res) :: Maybe Cmd
 
         traverse_ (runCommand runner) cmd
+        `catch` \e -> do
+        Logger.warningM "trex.agent" "Server offline waiting..."
+        Logger.warningM "trex.agent" $ show (e :: HTTP.HttpException)
 
         threadDelay (1 * 1000 * 1000)
 

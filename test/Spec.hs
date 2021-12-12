@@ -129,7 +129,7 @@ testServerAndAgent runner = do
 
     Async.link agentThread
 
-    let pipeline = makePipeline [makeStep "agent-test" "busybox" ["echo Agent Yello is live"]]
+    let pipeline = makePipeline [makeStep "agent-test" "busybox" ["echo Agent K is live"]]
 
     number <- handler.queueJob pipeline
     checkBuild handler number
